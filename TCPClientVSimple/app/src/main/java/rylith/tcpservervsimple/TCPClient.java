@@ -1,10 +1,14 @@
 package rylith.tcpservervsimple;
 
+import android.app.Activity;
+import android.graphics.Color;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -28,18 +32,22 @@ public class TCPClient {
     PrintWriter out;
     BufferedReader in;
 
+    private String connectionState = "";
     private Selector m_selector;
     private Map<SelectionKey, Channel> listKey= new HashMap<SelectionKey, Channel>();
     private Map<SelectionKey, Server> mapServer = new HashMap<SelectionKey, Server>();
 
     private ConnectCallback connectCallback;
     private AcceptCallback acceptCallback;
-
+    private TextView response;
+    private Activity activity;
     /**
      *  Constructor of the class. OnMessagedReceived listens for the messages received from server
      */
-    public TCPClient(OnMessageReceived listener) {
+    public TCPClient(OnMessageReceived listener, TextView response,Activity activity) {
         mMessageListener = listener;
+        this.response = response;
+        this.activity = activity;
         try {
             m_selector = SelectorProvider.provider().openSelector();
         } catch (IOException e) {
@@ -111,7 +119,7 @@ public class TCPClient {
 
                 }
 
-                Log.e("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
+                //Log.e("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
 
             } catch (Exception e) {
 
@@ -120,6 +128,7 @@ public class TCPClient {
             } finally {
                 //the socket must be closed. It is not possible to reconnect to this socket
                 // after it is closed, which means a new socket instance has to be created
+                m_selector.close();
             }
 
         } catch (Exception e) {
@@ -130,13 +139,17 @@ public class TCPClient {
 
     }
 
+    public String getConnectionState() {
+        return connectionState;
+    }
+
     //Declare the interface. The method messageReceived(String message) will must be implemented in the MyActivity
     //class at on asynckTask doInBackground
     public interface OnMessageReceived {
         public void messageReceived(String message);
     }
 
-    public void connect(InetAddress hostAddress, int port) throws UnknownHostException,
+    public void connect(final InetAddress hostAddress, final int port) throws UnknownHostException,
             SecurityException, IOException {
         SocketChannel m_ch;
         //Création de la socket de connexion
@@ -149,7 +162,23 @@ public class TCPClient {
         m_key = m_ch.register(m_selector, SelectionKey.OP_CONNECT);
 
         // request to connect to the server
-        m_ch.connect(new InetSocketAddress(hostAddress, port));
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+
+                response.setText("Try to connect on server: "+hostAddress.getHostAddress()+" on port: "+port);
+            }
+        });
+        try{
+        m_ch.connect(new InetSocketAddress(hostAddress, port));}
+        catch(ConnectException e){
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    connectionState="Connection failed";
+                    response.setTextColor(Color.RED);
+                    response.setText(connectionState);
+                }
+            });
+        }
         Channel channel = new ChannelTest(m_ch);
         channel.setDeliverCallback(new DeliverCallbackTest());
         listKey.put(m_key, channel);
@@ -163,11 +192,28 @@ public class TCPClient {
         } catch (IOException e) {
             e.printStackTrace();
             key.cancel();
+            connectionState="Connection failed";
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    response.setTextColor(Color.RED);
+                    response.setText(connectionState);
+                }
+            });
             return;
         }
         //Callback avertissant de la connection
         Channel channel = listKey.get(key);
         //connectCallback.connected(channel);
+        connectionState="Successful connection";
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                response.setTextColor(Color.parseColor("#1A9431"));
+                response.setText(connectionState);
+            }
+        });
+
+
+
         //channel.send(msg, 0, msg.length);
         key.interestOps(SelectionKey.OP_READ /*| SelectionKey.OP_WRITE*/);
     }
@@ -256,6 +302,22 @@ public class TCPClient {
             //nothing to do, the channel is already closed
         }
 
+    }
+
+    public void closeConnection(){
+        for(Map.Entry<SelectionKey, Channel> mapEntry : listKey.entrySet()){
+            Channel channel = mapEntry.getValue();
+            channel.close();
+        }
+    }
+
+    public boolean isConnected(){
+        boolean valid = true;
+        for(Map.Entry<SelectionKey, Channel> mapEntry : listKey.entrySet()){
+            SelectionKey key = mapEntry.getKey();
+            valid = key.isValid() && valid;
+        }
+        return valid;
     }
 
 }
