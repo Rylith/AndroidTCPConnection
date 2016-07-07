@@ -1,5 +1,7 @@
 package rylith.tcpservervsimple;
 
+import android.graphics.Point;
+
 public class Util {
 
   /** Read a signed 32bit value */
@@ -19,6 +21,17 @@ public class Util {
     bytes[offset+1]= (byte)((value >> 16) & 0xff);
     bytes[offset+2]= (byte)((value >> 8) & 0xff);
     bytes[offset+3]= (byte)(value & 0xff);
+  }
+
+  static public double distance(Point p1, Point p2){
+     double deltaX = p1.x - p2.x;
+     double deltaY = p1.y - p2.y;
+     double result = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+      return result;
+  }
+
+  static public double angle(Point center, Point target){
+      return Math.atan2(target.y - center.y, target.x - center.x);
   }
 
 }

@@ -14,13 +14,15 @@ import network.Interface.Server;
 public class ServerTest extends Server {
 	private int port;
 	private ServerSocketChannel m_sch;
-	private String IP_ADDRESS;
+	private static String IP_ADDRESS="";
 	
 	public ServerTest(int port) throws IOException {
 		this.port=port;
 		m_sch= ServerSocketChannel.open();
 		m_sch.configureBlocking(false);
-		getIPAddress();
+		if(IP_ADDRESS.equals("")){
+			getIPAddress();
+		}
 		m_sch.socket().bind(new InetSocketAddress(IP_ADDRESS, port));
 	}
 

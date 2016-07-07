@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,9 +20,17 @@ import android.widget.TextView;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class MyActivity extends Activity
 {
+    private static final long TIMER_AFF = 800 ;
+    private static final float PERCENTSCREENSIZE = 0.05f;
+    private static double COEF=1;
     private ListView mList;
     private ArrayList<String> arrayList;
     private MyCustomAdapter mAdapter;
@@ -40,6 +49,30 @@ public class MyActivity extends Activity
     private Button buttonConnect, buttonClear;
     private Activity activity;
     public static final String PREFS_SERV = "MyPrefsServ";
+    private Point center;
+    private Point current,prec,origin;
+    private int RAYON;
+    private static double MARGE = 40;
+    private int[] bufferDistX = new int[10];
+    private int[] bufferDistY = new int[10];
+
+    //To time the event on drag
+    private ScheduledFuture<?> timerChangeMode = null;
+    private ScheduledExecutorService task = Executors
+            .newSingleThreadScheduledExecutor();
+
+    private boolean borderMode=false;
+    private int previousSign=0;
+
+    private TimerTask change_mode = new TimerTask() {
+        @Override
+        public void run() {
+            origin = current;
+            borderMode = true;
+            Log.v("BORDER","Timer is active");
+        }
+    };
+    private int compteur=0;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -72,9 +105,16 @@ public class MyActivity extends Activity
         //mAdapter = new MyCustomAdapter(this, arrayList);
         //mList.setAdapter(mAdapter);
         //Creating canvas for drawing
-        /*Point screenSize = new Point();
+        Point screenSize = new Point();
         getWindowManager().getDefaultDisplay().getRealSize(screenSize);
-        sheet = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
+        center = new Point((screenSize.x/2),(screenSize.y/2));
+        Log.v("BORDER","coordonnée du centre: " + center.x + ", " + center.y);
+        //if the watch is circular
+        RAYON = screenSize.x/2;
+        MARGE = screenSize.x*PERCENTSCREENSIZE;
+        Log.v("BORDER","taille du rayon: " + RAYON);
+
+        /*sheet = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
         board = new Canvas(sheet);
         paint = new Paint();
         paint.setColor(Color.RED);
@@ -103,8 +143,61 @@ public class MyActivity extends Activity
                                     float distanceY) {
                 pos.setText("Scroll:\n" +"X: "+ distanceX+"\nY: "+distanceY);
 
-                int dist_x= (int) distanceX;
-                int dist_y=(int) distanceY;
+                int dist_x=0;
+                int dist_y=0;
+                current=new Point((int)e2.getX(),(int)e2.getY());
+                double distance = Util.distance(center,current);
+                if(distance < (RAYON - MARGE)){
+                    if(timerChangeMode != null){
+                        timerChangeMode.cancel(false);
+                    }
+                    dist_x= (int) distanceX;
+                    dist_y=(int) distanceY;
+                    bufferDistX[compteur]=dist_x;
+                    bufferDistY[compteur]=dist_y;
+                    compteur=(compteur+1)%bufferDistX.length;
+                    borderMode=false;
+                    COEF=1;
+                }else if(borderMode){
+
+                    double angleCur = Math.abs(Util.angle(center,current));
+                    double anglePrec = Math.abs(Util.angle(center,prec));
+                    int sign = (int) Math.signum(angleCur-anglePrec);
+                    if(sign != previousSign){
+                        previousSign=sign;
+                        if(previousSign != 0){
+                            origin=prec;
+                        }
+                    }
+                    double angleOr = Math.abs(Util.angle(center,origin));
+                    //Log.v("BORDER MODE", "angle du courant " +angleCur+" angle de l'origine: " + angleOr);
+                    sign = (int) Math.signum(angleCur-angleOr);
+
+                    //Log.v("BORDER","signe: "+sign);
+                    for(int i : bufferDistX){
+                        dist_x=dist_x+i;
+                    }
+                    for(int j : bufferDistY){
+                        dist_y=dist_y+j;
+                    }
+                    int signX = (int) Math.signum(dist_x/bufferDistX.length);
+                    int signY = (int) Math.signum(dist_y/bufferDistY.length);
+                    COEF=1+Math.abs(angleCur-angleOr)*2;
+                    dist_x= (int) (signX*sign*COEF);
+                    dist_y= (int) ( signY*sign*COEF);
+                    //Log.v("BORDER","Distance pour x: " +dist_x);
+                    //Log.v("BORDER","Distance pour y: " +dist_y);
+
+
+                }else{
+                    if(timerChangeMode == null || timerChangeMode.isCancelled() || timerChangeMode.isDone()){
+                        timerChangeMode = task.schedule(change_mode, TIMER_AFF,
+                            TimeUnit.MILLISECONDS);
+                    }
+
+                    dist_x= (int) distanceX;
+                    dist_y=(int) distanceY;
+                }
                 final String message = "SCROLL,"+dist_x+","+dist_y;
 
                 if (mTcpClient != null) {
@@ -113,6 +206,7 @@ public class MyActivity extends Activity
                     new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
 
                 }
+                prec=current;
                 return true;
             }
 
@@ -138,6 +232,14 @@ public class MyActivity extends Activity
             @Override
             public boolean onDown(MotionEvent e) {
                 pos.setText("Scroll:\n" +"X: "+e.getX()+"\nY: "+e.getY());
+                compteur=0;
+                for(int i=0; i<bufferDistX.length;i++){
+                    bufferDistX[i]=0;
+                }
+                for(int i=0; i<bufferDistY.length;i++){
+                    bufferDistX[i]=0;
+                }
+                prec=new Point((int)e.getX(),(int)e.getY());
                 /*final String message = "PRESS,0,0";
 
                 if (mTcpClient != null) {
@@ -154,19 +256,26 @@ public class MyActivity extends Activity
         );
         gestureListener = new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                /*if(event.getAction() == android.view.MotionEvent.ACTION_UP){
+                if(event.getAction() == android.view.MotionEvent.ACTION_UP){
                     final String message = "RELEASE,0,0";
-
+                    borderMode=false;
+                    COEF=1;
+                    if(timerChangeMode != null){
+                        timerChangeMode.cancel(false);
+                    }
                     if (mTcpClient != null) {
                         //Log.v("Coordinates",message);
                         //new sendTask().execute(message);
-                        new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
+                        new Thread() {
+                            public void run() {
+                                mTcpClient.sendMessage(message, 0, message.length());
+                            }
+                        }.start();
 
                     }
-                    return true;
-                }else{*/
+                }
                     return mDetector.onTouchEvent(event);
-               // }
+
             }};
         image.setOnTouchListener(gestureListener);
         buttonConnect.setOnClickListener(new View.OnClickListener() {

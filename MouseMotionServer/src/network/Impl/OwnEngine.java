@@ -86,7 +86,7 @@ public class OwnEngine extends Engine implements Runnable{
 		Channel channel = listKey.get(key);
 		connectCallback.connected(channel);
 		//channel.send(msg, 0, msg.length);
-		key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+		key.interestOps(SelectionKey.OP_READ /*| SelectionKey.OP_WRITE*/);
 	}
 
 	private void handleWrite(SelectionKey key) {
