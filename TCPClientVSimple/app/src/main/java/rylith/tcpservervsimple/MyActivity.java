@@ -329,11 +329,6 @@ public class MyActivity extends Activity
     @Override
     protected void onStop() {
         Log.v("Stop_MainActivity","call of STOP");
-        if(mTcpClient !=null){
-            mTcpClient.closeConnection();
-            mTcpClient.stopClient();
-            response.setText("");
-        }
         SharedPreferences settings = getSharedPreferences(PREFS_SERV, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("SERVERIP", SERVERIP);
@@ -342,6 +337,15 @@ public class MyActivity extends Activity
         editor.apply();
 
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mTcpClient !=null){
+            mTcpClient.closeConnection();
+            mTcpClient.stopClient();
+        }
+        super.onDestroy();
     }
 
     /*@Override
