@@ -31,7 +31,13 @@ public class Util {
   }
 
   static public double angle(Point center, Point target){
-      return Math.atan2(target.y - center.y, target.x - center.x);
+      double angle = Math.toDegrees(Math.atan2(target.y - center.y, target.x - center.x));
+
+      if(angle<0){
+          angle+=360;
+      }
+      return angle;
+
   }
 
 }

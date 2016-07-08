@@ -25,8 +25,8 @@ public class Pong{
 				System.out.println("Server is listening on port: "+ port);
 				port++;
 			}
-			pong.startEcho();
-			pong.mainloop();
+			//pong.startEcho();
+			new Thread((OwnEngine)pong).start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

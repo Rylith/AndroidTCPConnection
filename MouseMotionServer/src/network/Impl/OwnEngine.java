@@ -107,7 +107,6 @@ public class OwnEngine extends Engine implements Runnable{
 
 	private void handleRead(SelectionKey key) {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
-	    int nbread = 0;
 	    Channel channel = listKey.get(key);
 	    try {
 	    	msg=((ChannelTest) channel).getReadAutomata().handleRead();
@@ -121,10 +120,13 @@ public class OwnEngine extends Engine implements Runnable{
 		}
 	      return;
 	    }
-	    if (nbread == -1) {
+	    if (((ChannelTest) channel).getReadAutomata().isConnectionClosed()) {
 	      // the socket has been shutdown remotely cleanly"
 	      try {
 			key.channel().close();
+			listKey.remove(key);
+			channel.close();
+			System.out.println("Connection closed by client : "+channel);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

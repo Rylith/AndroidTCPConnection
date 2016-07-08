@@ -147,6 +147,7 @@ public class MyActivity extends Activity
                 int dist_y=0;
                 current=new Point((int)e2.getX(),(int)e2.getY());
                 double distance = Util.distance(center,current);
+                Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
                 if(distance < (RAYON - MARGE)){
                     if(timerChangeMode != null){
                         timerChangeMode.cancel(false);
@@ -163,6 +164,7 @@ public class MyActivity extends Activity
                     double angleCur = Math.abs(Util.angle(center,current));
                     double anglePrec = Math.abs(Util.angle(center,prec));
                     int sign = (int) Math.signum(angleCur-anglePrec);
+                    //Detect reversal of the direction of rotation
                     if(sign != previousSign){
                         previousSign=sign;
                         if(previousSign != 0){
@@ -180,9 +182,10 @@ public class MyActivity extends Activity
                     for(int j : bufferDistY){
                         dist_y=dist_y+j;
                     }
+                    //Direction of X et Y for the 10 previous point
                     int signX = (int) Math.signum(dist_x/bufferDistX.length);
                     int signY = (int) Math.signum(dist_y/bufferDistY.length);
-                    COEF=1+Math.abs(angleCur-angleOr)*2;
+                    COEF=1+Math.abs(angleCur-angleOr);
                     dist_x= (int) (signX*sign*COEF);
                     dist_y= (int) ( signY*sign*COEF);
                     //Log.v("BORDER","Distance pour x: " +dist_x);
@@ -331,7 +334,7 @@ public class MyActivity extends Activity
         editor.putString("SERVERIP", SERVERIP);
         editor.putInt("serverPort",SERVERPORT);
         // Commit the edits!
-        editor.commit();
+        editor.apply();
 
         super.onStop();
     }
@@ -366,15 +369,15 @@ public class MyActivity extends Activity
                     SERVERPORT = Integer.parseInt(message[1]);
                 }
             InetAddress address = InetAddress.getByName(SERVERIP);
-                //Log.v("Address", address.toString());
-                //Log.v("Port",Integer.toString(SERVERPORT));
+                Log.v("Address", address.toString());
+                Log.v("Port",Integer.toString(SERVERPORT));
                 mTcpClient.connect(address,SERVERPORT);
                 mTcpClient.run();
             }
             catch (java.io.IOException e) {
                 e.printStackTrace();
             }
-
+            Log.v("NETWORK","DoInBackground finished");
 
             return null;
         }

@@ -129,6 +129,7 @@ public class TCPClient {
                 //the socket must be closed. It is not possible to reconnect to this socket
                 // after it is closed, which means a new socket instance has to be created
                 m_selector.close();
+                Log.v("NETWORK","Client TCP is ending on FINALLY");
             }
 
         } catch (Exception e) {
@@ -136,7 +137,7 @@ public class TCPClient {
             Log.e("TCP", "C: Error", e);
 
         }
-
+        Log.v("NETWORK","Client TCP is ending");
     }
 
     public String getConnectionState() {
@@ -171,6 +172,7 @@ public class TCPClient {
         try{
         m_ch.connect(new InetSocketAddress(hostAddress, port));}
         catch(ConnectException e){
+            m_ch.close();
             activity.runOnUiThread(new Runnable() {
                 public void run() {
                     connectionState="Connection failed";
@@ -178,6 +180,8 @@ public class TCPClient {
                     response.setText(connectionState);
                 }
             });
+            mRun=false;
+            return;
         }
         Channel channel = new ChannelTest(m_ch);
         channel.setDeliverCallback(new DeliverCallbackTest());
@@ -197,8 +201,10 @@ public class TCPClient {
                 public void run() {
                     response.setTextColor(Color.RED);
                     response.setText(connectionState);
+
                 }
             });
+            mRun=false;
             return;
         }
         //Callback avertissant de la connection
@@ -236,7 +242,6 @@ public class TCPClient {
 
     private void handleRead(SelectionKey key) {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        int nbread = 0;
         Channel channel = listKey.get(key);
         try {
             msg=((ChannelTest) channel).getReadAutomata().handleRead();
@@ -250,13 +255,22 @@ public class TCPClient {
             }
             return;
         }
-        if (nbread == -1) {
+        if (((ChannelTest) channel).getReadAutomata().isConnectionClosed()) {
             // the socket has been shutdown remotely cleanly"
+            connectionState="Connection with server lost";
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    response.setTextColor(Color.RED);
+                    response.setText(connectionState);
+                }
+            });
             try {
                 key.channel().close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            listKey.remove(key);
+            mRun=false;
             key.cancel();
             return;
         }
@@ -307,8 +321,11 @@ public class TCPClient {
     public void closeConnection(){
         for(Map.Entry<SelectionKey, Channel> mapEntry : listKey.entrySet()){
             Channel channel = mapEntry.getValue();
+            SelectionKey key = mapEntry.getKey();
+            key.cancel();
             channel.close();
         }
+        listKey.clear();
     }
 
     public boolean isConnected(){

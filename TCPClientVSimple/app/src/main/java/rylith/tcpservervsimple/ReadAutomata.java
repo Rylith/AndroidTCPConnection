@@ -2,7 +2,6 @@ package rylith.tcpservervsimple;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public class ReadAutomata {
@@ -12,9 +11,9 @@ public class ReadAutomata {
 	ByteBuffer msgBuf = null; // for reading a message
 	static final int READING_LENGTH = 1;//State, can be an enum if there are more states
 	static final int READING_MSG = 2;
-	int state = READING_LENGTH; // initial state 
-	SelectionKey key;
-	
+	int state = READING_LENGTH; // initial state
+	private boolean connectionClosed = false;
+
 	public ReadAutomata(SocketChannel socketChannel){
 		this.sock=socketChannel;
 	}
@@ -26,6 +25,7 @@ public class ReadAutomata {
 			 if (nbread == -1) {
 				 //Error of reading bytes, so close the socket to prevent other error
 				 sock.close();
+                 connectionClosed=true;
 				 return null;
 			 }
 			if (lenBuf.remaining() == 0) {
@@ -49,4 +49,7 @@ public class ReadAutomata {
 		return null;
 	}
 
+    public boolean isConnectionClosed() {
+        return connectionClosed;
+    }
 }
