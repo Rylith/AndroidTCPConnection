@@ -28,8 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MyActivity extends Activity
 {
-    private static final long TIMER_AFF = 800 ;
-    private static final float PERCENTSCREENSIZE = 0.05f;
+    private static final long TIMER_AFF = 500 ;
+    private static final float PERCENTSCREENSIZE = 0.1f;
     private static double COEF=1;
     private ListView mList;
     private ArrayList<String> arrayList;
@@ -53,8 +53,8 @@ public class MyActivity extends Activity
     private Point current,prec,origin;
     private int RAYON;
     private static double MARGE = 40;
-    private int[] bufferDistX = new int[10];
-    private int[] bufferDistY = new int[10];
+    private double[] bufferX = new double[10];
+    private double[] bufferY = new double[10];
 
     //To time the event on drag
     private ScheduledFuture<?> timerChangeMode = null;
@@ -73,6 +73,10 @@ public class MyActivity extends Activity
         }
     };
     private int compteur=0;
+    private double lastPointOnstraightLineX;
+    private double lastPointOnstraightLineY;
+    private boolean reglin=false;
+    double[] coefs;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -147,17 +151,20 @@ public class MyActivity extends Activity
                 int dist_y=0;
                 current=new Point((int)e2.getX(),(int)e2.getY());
                 double distance = Util.distance(center,current);
-                Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
+                //Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
                 if(distance < (RAYON - MARGE)){
                     if(timerChangeMode != null){
                         timerChangeMode.cancel(false);
                     }
                     dist_x= (int) distanceX;
                     dist_y=(int) distanceY;
-                    bufferDistX[compteur]=dist_x;
-                    bufferDistY[compteur]=dist_y;
-                    compteur=(compteur+1)%bufferDistX.length;
+                    bufferX[compteur]=e2.getX();
+                    bufferY[compteur]=e2.getY();
+                    lastPointOnstraightLineX=bufferX[compteur];
+                    lastPointOnstraightLineY=bufferY[compteur];
+                    compteur=(compteur+1)% bufferX.length;
                     borderMode=false;
+                    reglin=true;
                     COEF=1;
                 }else if(borderMode){
 
@@ -176,21 +183,18 @@ public class MyActivity extends Activity
                     sign = (int) Math.signum(angleCur-angleOr);
 
                     //Log.v("BORDER","signe: "+sign);
-                    for(int i : bufferDistX){
-                        dist_x=dist_x+i;
+                    //Calcul of coefficient for the straight line
+                    if(reglin){
+                        coefs = Util.regress(bufferY,bufferX);
                     }
-                    for(int j : bufferDistY){
-                        dist_y=dist_y+j;
-                    }
-                    //Direction of X et Y for the 10 previous point
-                    int signX = (int) Math.signum(dist_x/bufferDistX.length);
-                    int signY = (int) Math.signum(dist_y/bufferDistY.length);
-                    COEF=1+Math.abs(angleCur-angleOr);
-                    dist_x= (int) (signX*sign*COEF);
-                    dist_y= (int) ( signY*sign*COEF);
-                    //Log.v("BORDER","Distance pour x: " +dist_x);
-                    //Log.v("BORDER","Distance pour y: " +dist_y);
-
+                    COEF=Math.abs(angleCur-angleOr);
+                    //Calcul y in function of the new x to stay on the straight line
+                    double y=(coefs[0]*(lastPointOnstraightLineX + COEF)+coefs[1]);
+                    dist_x= (int) (sign*COEF);
+                    dist_y= (int) (sign*(y - lastPointOnstraightLineY));
+                    lastPointOnstraightLineX+=COEF;
+                    lastPointOnstraightLineY=y;
+                    reglin=false;
 
                 }else{
                     if(timerChangeMode == null || timerChangeMode.isCancelled() || timerChangeMode.isDone()){
@@ -236,11 +240,11 @@ public class MyActivity extends Activity
             public boolean onDown(MotionEvent e) {
                 pos.setText("Scroll:\n" +"X: "+e.getX()+"\nY: "+e.getY());
                 compteur=0;
-                for(int i=0; i<bufferDistX.length;i++){
-                    bufferDistX[i]=0;
+                for(int i = 0; i< bufferX.length; i++){
+                    bufferX[i]=0;
                 }
-                for(int i=0; i<bufferDistY.length;i++){
-                    bufferDistX[i]=0;
+                for(int i = 0; i< bufferY.length; i++){
+                    bufferX[i]=0;
                 }
                 prec=new Point((int)e.getX(),(int)e.getY());
                 /*final String message = "PRESS,0,0";
@@ -262,6 +266,7 @@ public class MyActivity extends Activity
                 if(event.getAction() == android.view.MotionEvent.ACTION_UP){
                     final String message = "RELEASE,0,0";
                     borderMode=false;
+                    reglin=true;
                     COEF=1;
                     if(timerChangeMode != null){
                         timerChangeMode.cancel(false);
@@ -377,7 +382,7 @@ public class MyActivity extends Activity
             catch (java.io.IOException e) {
                 e.printStackTrace();
             }
-            Log.v("NETWORK","DoInBackground finished");
+            //Log.v("NETWORK","DoInBackground finished");
 
             return null;
         }

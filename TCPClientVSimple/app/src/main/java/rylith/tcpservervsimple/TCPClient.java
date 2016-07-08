@@ -129,7 +129,7 @@ public class TCPClient {
                 //the socket must be closed. It is not possible to reconnect to this socket
                 // after it is closed, which means a new socket instance has to be created
                 m_selector.close();
-                Log.v("NETWORK","Client TCP is ending on FINALLY");
+                //Log.v("NETWORK","Client TCP is ending on FINALLY");
             }
 
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class TCPClient {
             Log.e("TCP", "C: Error", e);
 
         }
-        Log.v("NETWORK","Client TCP is ending");
+        //Log.v("NETWORK","Client TCP is ending");
     }
 
     public String getConnectionState() {

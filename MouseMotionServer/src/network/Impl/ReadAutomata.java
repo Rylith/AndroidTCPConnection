@@ -59,6 +59,8 @@ public class ReadAutomata {
 					buffers.add(msgBuf);
 					}catch(OutOfMemoryError e){
 						System.err.println(e);
+						sock.close();
+						connectionClosed=true;
 						return null;
 					}
 					//System.out.println("No buffer found : length : " + length);
