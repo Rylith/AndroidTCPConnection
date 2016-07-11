@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class MyActivity extends Activity
 {
     private static final long TIMER_AFF = 500 ;
-    private static final float PERCENTSCREENSIZE = 0.1f;
+    private static final float PERCENTSCREENSIZE = 0.07f;
     private static double COEF=1;
     private ListView mList;
     private ArrayList<String> arrayList;
@@ -53,8 +53,8 @@ public class MyActivity extends Activity
     private Point current,prec,origin;
     private int RAYON;
     private static double MARGE = 40;
-    private double[] bufferX = new double[10];
-    private double[] bufferY = new double[10];
+    private double[] bufferX = new double[20];
+    private double[] bufferY = new double[20];
 
     //To time the event on drag
     private ScheduledFuture<?> timerChangeMode = null;
@@ -147,8 +147,8 @@ public class MyActivity extends Activity
                                     float distanceY) {
                 pos.setText("Scroll:\n" +"X: "+ distanceX+"\nY: "+distanceY);
 
-                int dist_x=0;
-                int dist_y=0;
+                int dist_x;
+                int dist_y;
                 current=new Point((int)e2.getX(),(int)e2.getY());
                 double distance = Util.distance(center,current);
                 //Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
@@ -157,7 +157,7 @@ public class MyActivity extends Activity
                         timerChangeMode.cancel(false);
                     }
                     dist_x= (int) distanceX;
-                    dist_y=(int) distanceY;
+                    dist_y= (int) distanceY;
                     bufferX[compteur]=e2.getX();
                     bufferY[compteur]=e2.getY();
                     lastPointOnstraightLineX=bufferX[compteur];
@@ -183,7 +183,7 @@ public class MyActivity extends Activity
                     sign = (int) Math.signum(angleCur-angleOr);
 
                     //Log.v("BORDER","signe: "+sign);
-                    //Calcul of coefficient for the straight line
+                    //Calcul of coefficients for the straight line
                     if(reglin){
                         coefs = Util.regress(bufferY,bufferX);
                     }
@@ -202,8 +202,8 @@ public class MyActivity extends Activity
                             TimeUnit.MILLISECONDS);
                     }
 
-                    dist_x= (int) distanceX;
-                    dist_y=(int) distanceY;
+                    dist_x= /*(int) distanceX*/0;
+                    dist_y= /*(int) distanceY*/0;
                 }
                 final String message = "SCROLL,"+dist_x+","+dist_y;
 
@@ -239,13 +239,15 @@ public class MyActivity extends Activity
             @Override
             public boolean onDown(MotionEvent e) {
                 pos.setText("Scroll:\n" +"X: "+e.getX()+"\nY: "+e.getY());
+                //Reset of position buffers
                 compteur=0;
                 for(int i = 0; i< bufferX.length; i++){
-                    bufferX[i]=0;
+                    bufferX[i]=Integer.MIN_VALUE;
                 }
                 for(int i = 0; i< bufferY.length; i++){
-                    bufferX[i]=0;
+                    bufferX[i]=Integer.MIN_VALUE;
                 }
+                //Init de the prec point before scrolling
                 prec=new Point((int)e.getX(),(int)e.getY());
                 /*final String message = "PRESS,0,0";
 

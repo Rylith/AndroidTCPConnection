@@ -237,6 +237,22 @@ public class TCPClient {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            connectionState="Connection with server lost";
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    response.setTextColor(Color.RED);
+                    response.setText(connectionState);
+                }
+            });
+            try {
+                key.channel().close();
+            } catch (IOException t) {
+                t.printStackTrace();
+            }
+            listKey.remove(key);
+            mRun=false;
+            key.cancel();
+            m_selector.wakeup();
         }
     }
 
