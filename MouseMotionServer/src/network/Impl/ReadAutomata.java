@@ -8,8 +8,6 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import network.Interface.Util;
-
 public class ReadAutomata {
 
 	SocketChannel sock;
