@@ -9,7 +9,7 @@ import java.awt.event.InputEvent;
 public class MouseControl {
 	
 	private Robot mouse;
-	private static int COEF = 2;
+	private static int COEF = 1;
 	public MouseControl(){
 		 try {
 				this.mouse = new Robot();
