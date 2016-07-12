@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,7 +31,7 @@ public class MyActivity extends Activity
     private Bitmap sheet;
     private Paint paint;
     private ImageView image;
-    public static final String SERVERIP = "192.168.43.43"; //your computer IP address
+    public static final String SERVERIP = "192.168.43.164"; //your computer IP address
     public static final int SERVERPORT = 4446;
     View.OnTouchListener gestureListener;
 
@@ -173,8 +174,8 @@ public class MyActivity extends Activity
     }
 
     public class connectTask extends AsyncTask<String,String,TCPClient> {
-
         @Override
+
         protected TCPClient doInBackground(String... message) {
 
             //we create a TCPClient object and
@@ -188,8 +189,8 @@ public class MyActivity extends Activity
             });
             try{
             InetAddress address = InetAddress.getByName(SERVERIP);
-                //Log.v("Address", address.toString());
-                //Log.v("Port",Integer.toString(SERVERPORT));
+                Log.v("Address", address.toString());
+                Log.v("Port",Integer.toString(SERVERPORT));
                 mTcpClient.connect(address,SERVERPORT);
                 mTcpClient.run();
             }

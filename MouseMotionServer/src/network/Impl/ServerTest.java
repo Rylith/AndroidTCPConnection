@@ -21,6 +21,7 @@ public class ServerTest extends Server {
 		m_sch= ServerSocketChannel.open();
 		m_sch.configureBlocking(false);
 		getIPAddress();
+		System.out.println(IP_ADDRESS);
 		m_sch.socket().bind(new InetSocketAddress(IP_ADDRESS, port));
 	}
 

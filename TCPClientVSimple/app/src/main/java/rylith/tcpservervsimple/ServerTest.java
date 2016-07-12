@@ -7,7 +7,7 @@ import java.nio.channels.ServerSocketChannel;
 public class ServerTest extends Server {
 	private int port;
 	private ServerSocketChannel m_sch;
-	private String m_localhost = "localhost";
+	private String m_localhost = "192.168.43.1";
 	
 	public ServerTest(int port) throws IOException {
 		this.port=port;
