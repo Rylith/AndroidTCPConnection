@@ -73,7 +73,9 @@ public class TCPClient {
             Channel channel = mapEntry.getValue();
             channel.send(message.getBytes(), offset, length);
             //Log.v("message send",message);
-            handleWrite(key);
+            key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            m_selector.wakeup();
+            //handleWrite(key);
         }
     }
 

@@ -27,18 +27,10 @@ public class MyActivity extends Activity
     private TCPClient mTcpClient;
     private GestureDetector mDetector;
     private TextView pos;
-<<<<<<< HEAD
-=======
-    private Canvas board;
+    /*private Canvas board;
     private Bitmap sheet;
-    private Paint paint;
-    private ImageView image;
-<<<<<<< HEAD
-    public static final String SERVERIP = "192.168.43.164"; //your computer IP address
-    public static final int SERVERPORT = 4446;
+    private Paint paint;*/
     View.OnTouchListener gestureListener;
-=======
->>>>>>> 3ca6852d535d08b6dc15e9899649ddb075cd9e2e
     public static String SERVERIP = "192.168.43.43"; //your computer IP address
     public static int SERVERPORT = 4446;
     private TextView response;
@@ -72,12 +64,8 @@ public class MyActivity extends Activity
     private double lastPointOnstraightLineX;
     private double lastPointOnstraightLineY;
     private boolean reglin=false;
-<<<<<<< HEAD
+
     double[] coefs;*/
-=======
-    double[] coefs;
->>>>>>> b0433ed73bf74a46f0b496f2e0e38468e64bf2c9
->>>>>>> 3ca6852d535d08b6dc15e9899649ddb075cd9e2e
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -138,7 +126,7 @@ public class MyActivity extends Activity
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
-                    new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
+                    mTcpClient.sendMessage(message,0,message.length());
 
                 }
             }
@@ -211,7 +199,7 @@ public class MyActivity extends Activity
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
-                    new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
+                    mTcpClient.sendMessage(message,0,message.length());
 
                 }
                 //prec=current;
@@ -245,7 +233,7 @@ public class MyActivity extends Activity
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
-                    new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
+                   mTcpClient.sendMessage(message,0,message.length());
 
                 }
                 return true;
@@ -261,11 +249,9 @@ public class MyActivity extends Activity
                     if (mTcpClient != null) {
                         //Log.v("Coordinates",message);
                         //new sendTask().execute(message);
-                        new Thread() {
-                            public void run() {
-                                mTcpClient.sendMessage(message, 0, message.length());
-                            }
-                        }.start();
+
+                        mTcpClient.sendMessage(message, 0, message.length());
+
 
                     }
                 }
@@ -341,13 +327,9 @@ public class MyActivity extends Activity
 
         if (mTcpClient != null) {
             //Log.v("Coordinates",message);
-            //new sendTask().execute(message);
-          final  String message = "WINDOW,"+center.x+","+center.y;
-            new Thread() {
-                public void run() {
-                    mTcpClient.sendMessage(message, 0, message.length());
-                }
-            }.start();
+            // new sendTask().execute(message);
+            final  String message = "WINDOW,"+center.x+","+center.y;
+            mTcpClient.sendMessage(message, 0, message.length());
 
         }
         super.onResume();
