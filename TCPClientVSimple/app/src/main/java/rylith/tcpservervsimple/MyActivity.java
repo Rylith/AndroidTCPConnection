@@ -2,9 +2,6 @@ package rylith.tcpservervsimple;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,49 +12,36 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class MyActivity extends Activity
 {
-    private static final long TIMER_AFF = 500 ;
-    private static final float PERCENTSCREENSIZE = 0.07f;
-    private static double COEF=1;
-    private ListView mList;
+    //private static final long TIMER_AFF = 500 ;
+    //private static final float PERCENTSCREENSIZE = 0.07f;
+    //private static double COEF=1;
+    /*private ListView mList;
     private ArrayList<String> arrayList;
-    private MyCustomAdapter mAdapter;
+    private MyCustomAdapter mAdapter;*/
     private TCPClient mTcpClient;
     private GestureDetector mDetector;
     private TextView pos;
-    private Canvas board;
-    private Bitmap sheet;
-    private Paint paint;
-    private ImageView image;
     public static String SERVERIP = "192.168.43.43"; //your computer IP address
     public static int SERVERPORT = 4446;
-    private View.OnTouchListener gestureListener;
     private TextView response;
     private EditText editTextAddress, editTextPort;
-    private Button buttonConnect, buttonClear;
     private Activity activity;
     public static final String PREFS_SERV = "MyPrefsServ";
     private Point center;
-    private Point current,prec,origin;
+    /*private Point current,prec,origin;
     private int RAYON;
     private static double MARGE = 40;
     private double[] bufferX = new double[20];
-    private double[] bufferY = new double[20];
+    private double[] bufferY = new double[20];*/
 
     //To time the event on drag
-    private ScheduledFuture<?> timerChangeMode = null;
+    /*private ScheduledFuture<?> timerChangeMode = null;
     private ScheduledExecutorService task = Executors
             .newSingleThreadScheduledExecutor();
 
@@ -76,7 +60,7 @@ public class MyActivity extends Activity
     private double lastPointOnstraightLineX;
     private double lastPointOnstraightLineY;
     private boolean reglin=false;
-    double[] coefs;
+    double[] coefs;*/
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -85,11 +69,11 @@ public class MyActivity extends Activity
         setContentView(R.layout.activity_my);
         activity=this;
         pos = (TextView) findViewById(R.id.pos);
-        image = (ImageView) this.findViewById(R.id.image);
+        ImageView image = (ImageView) this.findViewById(R.id.image);
         editTextAddress = (EditText) findViewById(R.id.addressEditText);
         editTextPort = (EditText) findViewById(R.id.portEditText);
-        buttonConnect = (Button) findViewById(R.id.connectButton);
-        buttonClear = (Button) findViewById(R.id.clearButton);
+        Button buttonConnect = (Button) findViewById(R.id.connectButton);
+        Button buttonClear = (Button) findViewById(R.id.clearButton);
         response = (TextView) findViewById(R.id.responseTextView);
 
         // Restore preferences
@@ -114,9 +98,9 @@ public class MyActivity extends Activity
         center = new Point((screenSize.x/2),(screenSize.y/2));
         Log.v("BORDER","coordonnée du centre: " + center.x + ", " + center.y);
         //if the watch is circular
-        RAYON = screenSize.x/2;
+        /*RAYON = screenSize.x/2;
         MARGE = screenSize.x*PERCENTSCREENSIZE;
-        Log.v("BORDER","taille du rayon: " + RAYON);
+        Log.v("BORDER","taille du rayon: " + RAYON);*/
 
         /*sheet = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
         board = new Canvas(sheet);
@@ -149,8 +133,8 @@ public class MyActivity extends Activity
 
                 int dist_x;
                 int dist_y;
-                current=new Point((int)e2.getX(),(int)e2.getY());
-                double distance = Util.distance(center,current);
+                //current=new Point((int)e2.getX(),(int)e2.getY());
+                /*double distance = Util.distance(center,current);
                 //Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
                 if(distance < (RAYON - MARGE)){
                     if(timerChangeMode != null){
@@ -202,18 +186,18 @@ public class MyActivity extends Activity
                             TimeUnit.MILLISECONDS);
                     }
 
-                    dist_x= /*(int) distanceX*/0;
-                    dist_y= /*(int) distanceY*/0;
-                }
-                final String message = "SCROLL,"+dist_x+","+dist_y;
-
+                    dist_x= /*(int) distanceX 0;
+                    dist_y= /*(int) distanceY 0;
+                }*/
+                final String message = "SCROLL,"+e2.getX()+","+ e2.getY()+","+distanceX+","+distanceY;
+                //Log.v("DEBUG", message);
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
                     new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
 
                 }
-                prec=current;
+                //prec=current;
                 return true;
             }
 
@@ -239,40 +223,24 @@ public class MyActivity extends Activity
             @Override
             public boolean onDown(MotionEvent e) {
                 pos.setText("Scroll:\n" +"X: "+e.getX()+"\nY: "+e.getY());
-                //Reset of position buffers
-                compteur=0;
-                for(int i = 0; i< bufferX.length; i++){
-                    bufferX[i]=Integer.MIN_VALUE;
-                }
-                for(int i = 0; i< bufferY.length; i++){
-                    bufferX[i]=Integer.MIN_VALUE;
-                }
-                //Init de the prec point before scrolling
-                prec=new Point((int)e.getX(),(int)e.getY());
-                /*final String message = "PRESS,0,0";
+                final String message = "DOWN,"+e.getX()+","+e.getY();
 
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
                     new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
 
-                }*/
+                }
                 return true;
             }
 
 
         }
         );
-        gestureListener = new View.OnTouchListener() {
+        View.OnTouchListener gestureListener = new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == android.view.MotionEvent.ACTION_UP){
+                if (event.getAction() == MotionEvent.ACTION_UP) {
                     final String message = "RELEASE,0,0";
-                    borderMode=false;
-                    reglin=true;
-                    COEF=1;
-                    if(timerChangeMode != null){
-                        timerChangeMode.cancel(false);
-                    }
                     if (mTcpClient != null) {
                         //Log.v("Coordinates",message);
                         //new sendTask().execute(message);
@@ -284,9 +252,10 @@ public class MyActivity extends Activity
 
                     }
                 }
-                    return mDetector.onTouchEvent(event);
+                return mDetector.onTouchEvent(event);
 
-            }};
+            }
+        };
         image.setOnTouchListener(gestureListener);
         buttonConnect.setOnClickListener(new View.OnClickListener() {
 
@@ -350,6 +319,23 @@ public class MyActivity extends Activity
         super.onDestroy();
     }
 
+    @Override
+    protected void onResume() {
+
+        if (mTcpClient != null) {
+            //Log.v("Coordinates",message);
+            //new sendTask().execute(message);
+          final  String message = "WINDOW,"+center.x+","+center.y;
+            new Thread() {
+                public void run() {
+                    mTcpClient.sendMessage(message, 0, message.length());
+                }
+            }.start();
+
+        }
+        super.onResume();
+    }
+
     /*@Override
     protected void onRestart() {
         Log.v("Restart_MainActivity","call of RESTART");
@@ -383,6 +369,7 @@ public class MyActivity extends Activity
                 Log.v("Address", address.toString());
                 Log.v("Port",Integer.toString(SERVERPORT));
                 mTcpClient.connect(address,SERVERPORT);
+                mTcpClient.setCenter(center);
                 mTcpClient.run();
             }
             catch (java.io.IOException e) {

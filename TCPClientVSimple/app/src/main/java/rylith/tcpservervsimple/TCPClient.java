@@ -2,6 +2,7 @@ package rylith.tcpservervsimple;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -41,6 +42,11 @@ public class TCPClient {
     private AcceptCallback acceptCallback;
     private TextView response;
     private Activity activity;
+    private Point center;
+
+    public void setCenter(Point center){
+        this.center=center;
+    }
     /**
      *  Constructor of the class. OnMessagedReceived listens for the messages received from server
      */
@@ -218,8 +224,8 @@ public class TCPClient {
             }
         });
 
-
-
+        String message = "WINDOW,"+center.x+","+center.y;
+        sendMessage(message,0,message.length());
         //channel.send(msg, 0, msg.length);
         key.interestOps(SelectionKey.OP_READ /*| SelectionKey.OP_WRITE*/);
     }

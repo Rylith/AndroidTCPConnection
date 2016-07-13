@@ -16,7 +16,7 @@ public class MouseListener {
 	private Point prec;
 	
 	private int RAYON;
-	private static final float PERCENTSCREENSIZE = 0.07f;
+	private static final float PERCENTSCREENSIZE = 0.00f;
 	
 	private static double MARGE = 40;
     private double[] bufferX = new double[20];
@@ -28,11 +28,13 @@ public class MouseListener {
             .newSingleThreadScheduledExecutor();
     
     private static final long TIMER_AFF = 500 ;
+	private static final boolean DEBUG = false;
     private TimerTask change_mode = new TimerTask() {
         @Override
         public void run() {
             origin = current;
             borderMode = true;
+            System.out.println("Timer is active");
         }
     };
     
@@ -52,9 +54,11 @@ public class MouseListener {
 	}
     
     public void setCenter(int x, int y) {
-		center = new Point(x/2,y/2);
-		RAYON = center.x/2;
+		center = new Point(x,y/*/2,y/2µ*/);
+		RAYON = center.x;
         MARGE = center.x*PERCENTSCREENSIZE;
+        if(DEBUG)
+        	System.out.println("SetCenter: " + center + ", RAYON: " + RAYON + ", MARGE: "+MARGE);
 	}
 	
 	public void onScroll(float x, float y, float distanceX, float distanceY) {
@@ -65,9 +69,11 @@ public class MouseListener {
 		current=new Point((int)x,(int)y);
 		
 		double COEF;
-		
+		if(DEBUG)
+			System.out.println("center: "+center+", current: "+current);
 		double distance = Util.distance(center,current);
-		//Log.v("BORDER", "distance: "+distance+" zone: " +(RAYON-MARGE));
+		if(DEBUG)
+			System.out.println("distance: "+distance+" zone: " +(RAYON-MARGE));
 		if(distance < (RAYON - MARGE)){
 			if(timerChangeMode != null){
 				timerChangeMode.cancel(false);

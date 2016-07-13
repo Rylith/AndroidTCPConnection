@@ -21,14 +21,16 @@ public class DeliverCallbackTest implements DeliverCallback {
 				//Coordinates of current point
 				float x = Float.parseFloat(x_y[1]);
 				float y = Float.parseFloat(x_y[2]);
+				if(DEBUG)
+					System.out.println("coordinates of scroll : "+ x + "," +y);
 				//Pre-calculated "distance" in x (could be negative to inform direction)
 				float distanceX = Float.parseFloat(x_y[3]);
 				if(DEBUG)
-					System.out.println("receive this quantity in x : " + x);
+					System.out.println("receive this quantity in x : " + distanceX);
 				//Pre-calculated distance in y
 				float distanceY = Float.parseFloat(x_y[4]);
 				if(DEBUG)
-					System.out.println("receive this quantity in y : " + y);
+					System.out.println("receive this quantity in y : " + distanceY);
 				//Move the cursor with the distance
 				if(DEBUG)
 					System.out.println("Before motion : " + MouseInfo.getPointerInfo().getLocation());
