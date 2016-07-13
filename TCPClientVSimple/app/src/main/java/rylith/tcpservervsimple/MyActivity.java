@@ -327,7 +327,7 @@ public class MyActivity extends Activity
         if (mTcpClient != null) {
             //Log.v("Coordinates",message);
             // new sendTask().execute(message);
-            final  String message = "WINDOW,"+center.x+","+center.y;
+            final  String message = "WINDOW,"+(center.x*2)+","+(center.y*2);
             mTcpClient.sendMessage(message, 0, message.length());
 
         }

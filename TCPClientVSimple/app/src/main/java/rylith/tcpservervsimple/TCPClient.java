@@ -173,7 +173,7 @@ public class TCPClient {
         // request to connect to the server
         activity.runOnUiThread(new Runnable() {
             public void run() {
-
+                response.setTextColor(Color.BLACK);
                 response.setText("Try to connect on server: "+hostAddress.getHostAddress()+" on port: "+port);
             }
         });
@@ -226,7 +226,7 @@ public class TCPClient {
             }
         });
 
-        String message = "WINDOW,"+center.x+","+center.y;
+        String message = "WINDOW,"+(center.x*2)+","+(center.y*2);
         sendMessage(message,0,message.length());
         //channel.send(msg, 0, msg.length);
         key.interestOps(SelectionKey.OP_READ /*| SelectionKey.OP_WRITE*/);
