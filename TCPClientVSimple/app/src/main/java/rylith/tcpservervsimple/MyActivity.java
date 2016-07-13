@@ -30,7 +30,6 @@ public class MyActivity extends Activity
     /*private Canvas board;
     private Bitmap sheet;
     private Paint paint;*/
-    View.OnTouchListener gestureListener;
     public static String SERVERIP = "192.168.43.43"; //your computer IP address
     public static int SERVERPORT = 4446;
     private TextView response;
@@ -218,7 +217,7 @@ public class MyActivity extends Activity
                 if (mTcpClient != null) {
                     //Log.v("Coordinates",message);
                     //new sendTask().execute(message);
-                    new Thread(){public void run() {mTcpClient.sendMessage(message,0,message.length());}}.start();
+                    mTcpClient.sendMessage(message,0,message.length());
 
                 }
                 return true;
