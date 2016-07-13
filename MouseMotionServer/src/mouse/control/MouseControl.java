@@ -10,7 +10,7 @@ public class MouseControl {
 	
 	private static final boolean DEBUG = false;
 	private Robot mouse;
-	private static int COEF = 2;
+	private static int COEF = 1;
 	public MouseControl(){
 		 try {
 				this.mouse = new Robot();

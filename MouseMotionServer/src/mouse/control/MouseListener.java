@@ -54,7 +54,7 @@ public class MouseListener {
 	}
     
     public void setCenter(int x, int y) {
-		center = new Point(x,y/*/2,y/2µ*/);
+		center = new Point(x/2,y/2);
 		RAYON = center.x;
         MARGE = center.x*PERCENTSCREENSIZE;
         if(DEBUG)
